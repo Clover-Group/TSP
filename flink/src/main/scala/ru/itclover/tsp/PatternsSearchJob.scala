@@ -137,7 +137,7 @@ case class PatternsSearchJob[In: TypeInformation, InKey, InItem](
 
   def applyTransformation(dataStream: DataStream[In]): DataStream[In] = source.conf.dataTransformation match {
     case Some(_) =>
-      import source.{extractor, timeExtractor}
+      import source.{extractor, timeExtractor, idxExtractor}
       dataStream
         .keyBy(source.partitioner)
         .process(

@@ -7,6 +7,7 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.util.Collector
 import ru.itclover.tsp.StreamSource
+import ru.itclover.tsp.core.Pattern.IdxExtractor
 import ru.itclover.tsp.core.io.{Extractor, TimeExtractor}
 import ru.itclover.tsp.utils.KeyCreator
 //import ru.itclover.tsp.phases.NumericPhases.InKeyNumberExtractor
@@ -37,6 +38,7 @@ class SparseRowsDataAccumulator[InEvent, InKey, Value, OutEvent](
   implicit extractTime: TimeExtractor[InEvent],
   extractKeyAndVal: InEvent => (InKey, Value),
   extractValue: Extractor[InEvent, InKey, Value],
+  extractIdx: IdxExtractor[InEvent],
   eventCreator: EventCreator[OutEvent, InKey],
   keyCreator: KeyCreator[InKey]
 ) extends KeyedProcessFunction[String, InEvent, OutEvent]
@@ -95,7 +97,7 @@ class SparseRowsDataAccumulator[InEvent, InKey, Value, OutEvent](
           if (value != null) list(extraFieldsIndexesMap(name)) = (name, value.asInstanceOf[AnyRef])
         }
       //}
-      val outEvent = eventCreator.create(list)
+      val outEvent = eventCreator.create(list, extractIdx(item))
       if (lastTimestamp.toMillis != time.toMillis && lastEvent != null) {
         out.collect(lastEvent)
       }
@@ -128,6 +130,7 @@ object SparseRowsDataAccumulator {
     implicit timeExtractor: TimeExtractor[InEvent],
     extractKeyVal: InEvent => (InKey, Value),
     extractAny: Extractor[InEvent, InKey, Value],
+    extractIdx: IdxExtractor[InEvent],
     eventCreator: EventCreator[OutEvent, InKey],
     keyCreator: KeyCreator[InKey]
   ): SparseRowsDataAccumulator[InEvent, InKey, Value, OutEvent] = {
@@ -154,6 +157,7 @@ object SparseRowsDataAccumulator {
             timeExtractor,
             extractKeyVal,
             extractAny,
+            extractIdx,
             eventCreator,
             keyCreator
           )
@@ -180,6 +184,7 @@ object SparseRowsDataAccumulator {
             timeExtractor,
             extractKeyVal,
             extractAny,
+            extractIdx,
             eventCreator,
             keyCreator
           )

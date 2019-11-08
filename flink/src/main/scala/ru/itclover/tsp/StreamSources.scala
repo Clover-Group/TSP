@@ -198,6 +198,7 @@ case class JdbcSource(
         timeExtractor,
         kvExtractor,
         extractor,
+        idxExtractor,
         eventCreator,
         keyCreator
       )
@@ -337,6 +338,7 @@ case class InfluxDBSource(
         timeExtractor,
         kvExtractor,
         extractor,
+        idxExtractor,
         eventCreator,
         keyCreator
       )
@@ -435,6 +437,7 @@ case class KafkaSource(
         timeExtractor,
         kvExtractor,
         extractor,
+        idxExtractor,
         eventCreator,
         keyCreator
       )
