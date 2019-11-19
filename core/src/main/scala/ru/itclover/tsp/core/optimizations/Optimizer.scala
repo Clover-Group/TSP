@@ -14,6 +14,11 @@ import ru.itclover.tsp.core.optimizations.Optimizer.S
 
 import scala.language.{existentials, higherKinds}
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+  "org.wartremover.warts.TraversableOps"
+))
 class Optimizer[E: IdxExtractor: TimeExtractor]() extends Serializable {
 
   def optimizations[T] =

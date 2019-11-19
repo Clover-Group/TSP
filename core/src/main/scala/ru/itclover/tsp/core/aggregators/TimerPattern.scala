@@ -25,6 +25,7 @@ case class TimerPattern[Event: IdxExtractor: TimeExtractor, S, T](
 
 case class TimerAccumState[T](windowQueue: m.Queue[(Idx, Time)]) extends AccumState[T, Boolean, TimerAccumState[T]] {
 
+  @SuppressWarnings(Array("org.wartremover.warts.TraversableOps"))
   @inline
   override def updated(
     window: Window,

@@ -22,6 +22,7 @@ class TimestampsAdderPattern[Event: IdxExtractor: TimeExtractor, S, T](
 
 protected case class TimestampAdderAccumState[T]() extends AccumState[T, Segment, TimestampAdderAccumState[T]] {
 
+  @SuppressWarnings(Array("org.wartremover.warts.TraversableOps"))
   @inline
   override def updated(
     window: Window,

@@ -104,6 +104,7 @@ case class WindowStatisticAccumState[T](
 
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
 case class WindowStatisticQueueInstance(
   idx: Idx,
   time: Time,

@@ -23,6 +23,7 @@ class StateMachine[F[_]: Monad: Traverse] {
     * @tparam State internal State type
     * @return F[State] there State's queue is empty. It allows to avoid memory leaks.
     */
+  @SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
   def run[Event, Out, State](
     pattern: Pattern[Event, State, Out],
     events: Iterable[Event],
@@ -31,6 +32,7 @@ class StateMachine[F[_]: Monad: Traverse] {
     groupSize: Int = 1000
   ): F[State] = {
 
+    @SuppressWarnings(Array("org.wartremover.warts.Var"))
     var counter = 0
     import cats.instances.list._
 

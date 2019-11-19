@@ -5,6 +5,10 @@ import ru.itclover.tsp.core.Pattern.Idx
 import scala.annotation.tailrec
 import scala.collection.{mutable => m}
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.DefaultArguments"
+))
 object QueueUtils {
 
   private val trueFunction = (_: Any) => true
@@ -13,6 +17,7 @@ object QueueUtils {
     if (predicate.eq(trueFunction)) (queue, m.Queue.empty)
     else {
 
+      @SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements"))
       @tailrec
       def inner(result: m.Queue[A], q: m.Queue[A]): (m.Queue[A], m.Queue[A]) =
         q.headOption match {

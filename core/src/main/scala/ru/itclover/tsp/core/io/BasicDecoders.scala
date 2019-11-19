@@ -7,6 +7,11 @@ trait BasicDecoders[From] {
   implicit def decodeToAny: Decoder[From, Any]
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.Null",
+  "org.wartremover.warts.Throw"
+))
 object AnyDecodersInstances extends BasicDecoders[Any] with Serializable {
   import Decoder._
 

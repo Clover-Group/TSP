@@ -1,6 +1,8 @@
 package ru.itclover.tsp.core
 
 sealed trait Result[+A] {
+
+  @SuppressWarnings(Array("org.wartremover.warts.Throw"))
   private def get: A = this match {
     case Fail    => throw new RuntimeException("Illegal get on Fail")
     case Succ(t) => t

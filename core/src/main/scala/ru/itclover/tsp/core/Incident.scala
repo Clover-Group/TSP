@@ -10,16 +10,20 @@ import cats.Semigroup
   * @param segment bounds of incident
   * @param forwardedFields which fields need to push to sink
   */
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 case class Incident(
   id: String,
   patternId: String,
   maxWindowMs: Long,
   segment: Segment,
+  @SuppressWarnings(Array("org.wartremover.warts.Any"))
   forwardedFields: Seq[(String, Any)],
+  @SuppressWarnings(Array("org.wartremover.warts.Any"))
   patternPayload: Seq[(String, Any)]
 ) extends Product
     with Serializable
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 object IncidentInstances {
 
   implicit def semigroup: Semigroup[Incident] = new Semigroup[Incident] {

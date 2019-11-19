@@ -43,6 +43,10 @@ object PQueue {
   }
 
   // PQueue with mutable queue backend. This is the default implementation used in the majority of patterns
+  @SuppressWarnings(Array(
+    "org.wartremover.warts.NonUnitStatements",
+    "org.wartremover.warts.Throw"
+  ))
   case class MutablePQueue[T](queue: java.util.Deque[IdxValue[T]]) extends PQueue[T] {
 
     override def headOption: Option[IdxValue[T]] = Option.apply(queue.peekFirst())
@@ -96,6 +100,7 @@ object PQueue {
     }
   }
 
+  @SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements"))
   object MutablePQueue {
 
     def apply[T](): MutablePQueue[T] = new MutablePQueue(new util.ArrayDeque[IdxValue[T]]())
@@ -119,6 +124,8 @@ object PQueue {
       queue.dequeueOption().map { case (idx, pqueue) => (idx.map(_ => func(idx)), MapPQueue(pqueue, func)) }
     override def behead(): PQueue[T] = this.copy(queue = queue.behead())
     override def beheadOption(): Option[PQueue[T]] = queue.beheadOption().map(q => MapPQueue(q, func))
+
+    @SuppressWarnings(Array("org.wartremover.warts.Throw"))
     override def enqueue(idxValues: IdxValue[T]*): PQueue[T] = throw new UnsupportedOperationException(
       "Cannot enqueue to IdxMapPQueue! Bad logic"
     )

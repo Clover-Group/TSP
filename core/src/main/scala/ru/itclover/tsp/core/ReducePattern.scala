@@ -38,6 +38,10 @@ class ReducePattern[Event, S, T1, T2](
 
   private def processQueues(qs: Seq[QI[T1]], resultQ: QI[T2]): (Seq[QI[T1]], QI[T2]) = {
 
+    @SuppressWarnings(Array(
+      "org.wartremover.warts.OptionPartial",
+      "org.wartremover.warts.TraversableOps"
+    ))
     @tailrec
     def inner(queues: Seq[QI[T1]], result: QI[T2]): (Seq[QI[T1]], QI[T2]) = {
 

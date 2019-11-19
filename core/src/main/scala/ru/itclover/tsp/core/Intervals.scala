@@ -45,6 +45,7 @@ object Intervals {
   }
 
   object TimeInterval {
+    @SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
     def apply(min: Window = MinWindow, max: Window = MaxWindow): TimeInterval = TimeInterval(min.toMillis, max.toMillis)
 
     val MaxInterval = TimeInterval(MaxWindow, MaxWindow)
@@ -53,10 +54,12 @@ object Intervals {
   /** Simple inclusive-exclusive numeric interval */
   case class NumericInterval[T](start: T, end: Option[T])(implicit numeric: Numeric[T]) extends Interval[T] {
 
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     override def contains(item: T): Boolean = numeric.gteq(item, start) && (end.isEmpty || numeric.lteq(item, end.get))
 
     override def isInfinite: Boolean = end.isEmpty
 
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     override def getRelativePosition(item: T): IntervalPosition =
       if (numeric.lt(item, start)) {
         LessThanBegin
