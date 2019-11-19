@@ -13,6 +13,7 @@ sealed trait AST extends Product with Serializable {
 
   def metadata: PatternMetadata
 
+  @SuppressWarnings(Array("org.wartremover.warts.Throw"))
   def requireType(requirementType: ASTType, message: Any): Unit =
     if (valueType != requirementType) throw ParseException(message.toString)
 }
@@ -36,6 +37,10 @@ case class Range[T](from: T, to: T)(implicit ct: ClassTag[T]) extends AST {
 }
 
 // TODO@trolley Rm with Function1, Function2, Function3 - boilerplate is better than mutable maps and extra complexity
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Throw",
+  "org.wartremover.warts.TraversableOps"
+))
 case class FunctionCall(functionName: Symbol, arguments: Seq[AST])(implicit fr: FunctionRegistry) extends AST {
   override def metadata = arguments.map(_.metadata).reduce(_ |+| _)
   override val valueType: ASTType = fr.functions.get((functionName, arguments.map(_.valueType))) match {
@@ -48,6 +53,11 @@ case class FunctionCall(functionName: Symbol, arguments: Seq[AST])(implicit fr: 
   }
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.Throw",
+  "org.wartremover.warts.TraversableOps"
+))
 case class ReducerFunctionCall(functionName: Symbol, @transient cond: Result[Any] => Boolean, arguments: Seq[AST])(
   implicit fr: FunctionRegistry
 ) extends AST {
@@ -80,6 +90,7 @@ case class AndThen(first: AST, second: AST) extends AST {
   override val valueType: ASTType = BooleanASTType
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
 case class Timer(cond: AST, interval: TimeInterval, gap: Option[Window] = None) extends AST {
   // Careful! Could be wrong, depending on the PatternMetadata.sumWindowsMs use-cases
   override def metadata = cond.metadata |+| PatternMetadata(Set.empty, gap.map(_.toMillis).getOrElse(interval.max))
@@ -106,6 +117,7 @@ case class ForWithInterval(inner: AST, exactly: Option[Boolean], window: Window,
   override val valueType = BooleanASTType
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
 case class AggregateCall(function: AggregateFn, value: AST, window: Window, gap: Option[Window] = None) extends AST {
   override def metadata = value.metadata |+| PatternMetadata(Set.empty, gap.getOrElse(window).toMillis)
 
@@ -120,6 +132,7 @@ case object Lag extends AggregateFn
 
 object AggregateFn {
 
+  @SuppressWarnings(Array("org.wartremover.warts.Throw"))
   def fromSymbol(name: Symbol): AggregateFn = name match {
     case 'sum   => Sum
     case 'count => Count

@@ -31,6 +31,11 @@ case class FunctionRegistry(
   def ++(other: FunctionRegistry) = FunctionRegistry(functions ++ other.functions, reducers ++ other.reducers)
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+  "org.wartremover.warts.TraversableOps"
+))
 object DefaultFunctions extends LazyLogging{
 
   private def toResult[T](x: Any)(implicit ct: ClassTag[T]): Result[T] =

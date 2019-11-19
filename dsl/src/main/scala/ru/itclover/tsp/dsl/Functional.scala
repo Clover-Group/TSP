@@ -34,6 +34,7 @@ trait Logical[T] {
 
 object Logical {
 
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   implicit val AnyLogical: Logical[Any] = new Logical[Any] {
 
     def and(a: Any, b: Any): Boolean = a.asInstanceOf[Boolean] && b.asInstanceOf[Boolean]

@@ -20,6 +20,10 @@ import scala.language.implicitConversions
 import scala.reflect.ClassTag
 trait AnyState[T]
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+))
 case class ASTPatternGenerator[Event, EKey, EItem]()(
   implicit idxExtractor: IdxExtractor[Event],
   timeExtractor: TimeExtractor[Event],

@@ -5,6 +5,10 @@ import ru.itclover.tsp.core.{RawPattern, Time}
 import ru.itclover.tsp.core.io.{Decoder, Extractor, TimeExtractor}
 
 // Helper method to extract only the used fields (identifiers) from the list of patterns
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+))
 object PatternFieldExtractor {
 
   def extract[E, EKey, EItem](patterns: Seq[RawPattern])(

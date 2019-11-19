@@ -16,6 +16,14 @@ import scala.reflect.ClassTag
 //  def testFieldsIdxMap(anyStr: String) = 0
 //}
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+  "org.wartremover.warts.NonUnitStatements",
+  "org.wartremover.warts.Null",
+  "org.wartremover.warts.Throw",
+  "org.wartremover.warts.TraversableOps"
+))
 class ASTBuilder(val input: ParserInput, toleranceFraction: Double, fieldsTags: Map[Symbol, ClassTag[_]])
     extends Parser {
 
