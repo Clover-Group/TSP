@@ -30,6 +30,11 @@ import ru.itclover.tsp.utils.ErrorsADT.{ConfigErr, InvalidPatternsCode}
 
 import scala.reflect.ClassTag
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+  "org.wartremover.warts.IsInstanceOf"
+))
 case class PatternsSearchJob[In: TypeInformation, InKey, InItem](
   source: StreamSource[In, InKey, InItem],
   fields: Set[InKey],
@@ -148,6 +153,10 @@ case class PatternsSearchJob[In: TypeInformation, InKey, InItem](
   }
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.AsInstanceOf",
+))
 object PatternsSearchJob {
   type RichSegmentedP[E] = RichPattern[E, Segment, AnyState[Segment]]
   type RichPattern[E, T, S] = ((Pattern[E, S, T], PatternMetadata), RawPattern)

@@ -21,6 +21,10 @@ import ru.itclover.tsp.RowWithIdx
   *                            separated by approx. equal buckets by the max window in pattern (TBD by sum window size)
   */
 @SerialVersionUID(91002L)
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.DefaultArguments",
+))
 case class JDBCInputConf(
   sourceId: Int,
   jdbcUrl: String,

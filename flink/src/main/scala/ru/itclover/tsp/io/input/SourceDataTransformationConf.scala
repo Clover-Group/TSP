@@ -6,6 +6,9 @@ abstract class SourceDataTransformation[Event, EKey, EValue](val `type`: String)
   val config: SourceDataTransformationConf
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.DefaultArguments",
+))
 case class NarrowDataUnfolding[Event, EKey, EValue](
   keyColumn: EKey,
   valueColumn: EKey,
@@ -16,6 +19,9 @@ case class NarrowDataUnfolding[Event, EKey, EValue](
   override val config: SourceDataTransformationConf = this
 }
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.DefaultArguments",
+))
 case class WideDataFilling[Event, EKey, EValue](fieldsTimeoutsMs: Map[EKey, Long], defaultTimeout: Option[Long] = None)
     extends SourceDataTransformation[Event, EKey, EValue]("WideDataFilling")
     with SourceDataTransformationConf {

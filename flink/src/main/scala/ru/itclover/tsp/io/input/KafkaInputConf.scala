@@ -4,6 +4,10 @@ import java.util.UUID
 import ru.itclover.tsp.RowWithIdx
 
 @SerialVersionUID(91000L)
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.DefaultArguments",
+))
 case class KafkaInputConf(
   brokers: String,
   topic: String,

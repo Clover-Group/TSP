@@ -28,6 +28,9 @@ trait OutputConf[Event] {
   * @param batchInterval batch size for writing found incidents
   * @param parallelism num of parallel task to write data
   */
+@SuppressWarnings(Array(
+  "org.wartremover.warts.DefaultArguments",
+))
 case class JDBCOutputConf(
   tableName: String,
   rowSchema: RowSchema,
@@ -52,6 +55,9 @@ case class JDBCOutputConf(
 //  override def parallelism: Option[Int] = Some(1)
 //}
 
+@SuppressWarnings(Array(
+  "org.wartremover.warts.AsInstanceOf",
+))
 case class KafkaOutputConf(
   broker: String,
   topic: String,

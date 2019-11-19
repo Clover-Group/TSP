@@ -81,6 +81,7 @@ object StreamSource {
 
 case class RowWithIdx(idx: Idx, row: Row)
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 object JdbcSource {
 
   def create(conf: JDBCInputConf, fields: Set[Symbol])(
@@ -99,6 +100,7 @@ object JdbcSource {
 }
 
 // todo rm nullField and trailing nulls in queries at platform (uniting now done on Flink) after states fix
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 case class JdbcSource(
   conf: JDBCInputConf,
   fieldsClasses: Seq[(Symbol, Class[_])],
@@ -213,6 +215,7 @@ case class JdbcSource(
   implicit override def idxExtractor: IdxExtractor[RowWithIdx] = IdxExtractor.of(_.idx)
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 object InfluxDBSource {
 
   def create(conf: InfluxDBInputConf, fields: Set[Symbol])(
@@ -230,6 +233,7 @@ object InfluxDBSource {
     } yield source
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 case class InfluxDBSource(
   conf: InfluxDBInputConf,
   fieldsClasses: Seq[(Symbol, Class[_])],
@@ -353,6 +357,7 @@ case class InfluxDBSource(
 
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 object KafkaSource {
 
   val log = Logger[KafkaSource]
@@ -374,6 +379,7 @@ object KafkaSource {
 
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 case class KafkaSource(
   conf: KafkaInputConf,
   fieldsClasses: Seq[(Symbol, Class[_])],

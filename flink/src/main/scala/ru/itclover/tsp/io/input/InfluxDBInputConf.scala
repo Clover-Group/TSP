@@ -23,6 +23,10 @@ import ru.itclover.tsp.services.InfluxDBService
   *                            separated by approx. equal buckets by the max window in pattern (TBD by sum window size)
   */
 @SerialVersionUID(91001L)
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Any",
+  "org.wartremover.warts.DefaultArguments",
+))
 case class InfluxDBInputConf(
   sourceId: Int,
   dbName: String,

@@ -68,6 +68,12 @@ object InfluxDBInputFormat {
 }
 
 @SerialVersionUID(42L)
+@SuppressWarnings(Array(
+  "org.wartremover.warts.Null",
+  "org.wartremover.warts.Throw",
+  "org.wartremover.warts.Var",
+  "org.wartremover.warts.DefaultARguments",
+))
 class InfluxDBInputFormat extends GenericInputFormat[QueryResult.Result] with NonParallelInput {
   var url: String = _
   var username: String = _
