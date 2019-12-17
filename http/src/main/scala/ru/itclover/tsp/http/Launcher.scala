@@ -1,7 +1,6 @@
 package ru.itclover.tsp.http
 
 import java.net.URLDecoder
-import java.nio.file.{Files, Paths}
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
 import akka.actor.ActorSystem
@@ -11,12 +10,8 @@ import cats.implicits._
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.Logger
-import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
-import org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup
 
-import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
 import scala.io.StdIn
@@ -127,8 +122,6 @@ object Launcher extends App with HttpService {
 
   /**
   * Method for flink environment configuration
-    * @param env flink execution environment
-    */
   def configureEnv(env: StreamExecutionEnvironment): StreamExecutionEnvironment = {
 
     env.enableCheckpointing(500)
@@ -164,7 +157,7 @@ object Launcher extends App with HttpService {
     env
 
   }
-
+*/
   def createClusterEnv: Either[String, StreamExecutionEnvironment] = getClusterHostPort.flatMap {
     case (clusterHost, clusterPort) =>
       log.info(s"Starting TSP on cluster Flink: $clusterHost:$clusterPort with monitoring in $monitoringUri")
@@ -173,13 +166,13 @@ object Launcher extends App with HttpService {
 
       Either.cond(
         jarPath.endsWith(".jar"),
-        configureEnv(StreamExecutionEnvironment.createRemoteEnvironment(clusterHost, clusterPort, jarPath)),
+        StreamExecutionEnvironment.createRemoteEnvironment(clusterHost, clusterPort, jarPath),
         s"Jar path is invalid: `$jarPath` (no jar extension)"
       )
   }
 
   def createLocalEnv: Either[String, StreamExecutionEnvironment] = {
     log.info(s"Starting local Flink with monitoring in $monitoringUri")
-    Right(configureEnv(StreamExecutionEnvironment.createLocalEnvironment()))
+    Right(StreamExecutionEnvironment.createLocalEnvironment())
   }
 }
