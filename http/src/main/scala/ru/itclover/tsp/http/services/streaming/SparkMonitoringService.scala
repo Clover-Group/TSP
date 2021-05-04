@@ -5,6 +5,7 @@ import akka.stream.ActorMaterializer
 import org.apache.spark.sql.SparkSession
 import ru.itclover.tsp.http.services.streaming.MonitoringServiceModel._
 
+import java.sql.DriverManager
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
@@ -14,22 +15,27 @@ case class SparkMonitoringService(spark: SparkSession)(
   ec: ExecutionContext
 ) extends MonitoringServiceProtocols {
 
+  val databaseConnection = DriverManager.getConnection("jdbc:h2:mem:tsp_data")
+
   def queryJobInfo(name: String): Future[Option[JobDetails]] = Future {
     Try {
-      val jobIds = spark.sparkContext.statusTracker.getJobIdsForGroup(name)
-      val stageInfos = jobIds
-        .map(jid => spark.sparkContext.statusTracker.getJobInfo(jid).get.stageIds())
-        .reduce(_ ++ _)
-        .map(sid => spark.sparkContext.statusTracker.getStageInfo(sid).get)
-      val vertices = stageInfos.map(si => Vertex(si.stageId.toString, si.name, VertexMetrics(0, 0, None)))
-      val statuses = jobIds.map(jid => spark.sparkContext.statusTracker.getJobInfo(jid).get.status().toString)
-      val state = statuses match {
-        case s if s.contains("FAILED")  => "FAILED"
-        case s if s.contains("UNKNOWN") => "UNKNOWN"
-        case s if s.contains("RUNNING") => "RUNNING"
-        case _                          => "FINISHED"
-      }
-      JobDetails(name, name, state, 0, 0, vertices.toVector)
+      val basicStatement = databaseConnection.prepareStatement("SELECT stream, status FROM jobs WHERE name = ?")
+      basicStatement.setString(1, name)
+      val basicResultSet = basicStatement.executeQuery()
+      basicResultSet.next()
+      val stream = basicResultSet.getBoolean("stream")
+      val status = basicResultSet.getString("status")
+      val streamingQueryStatement =
+        databaseConnection.prepareStatement("SELECT id, status, read_rows FROM streaming_queries WHERE job_name = ?")
+      streamingQueryStatement.setString(1, name)
+      val streamingQueryResultSet = streamingQueryStatement.executeQuery()
+      val streamingQueries = Iterator.continually {
+        val id = streamingQueryResultSet.getInt("id")
+        val status = streamingQueryResultSet.getString("status")
+        val readRows = streamingQueryResultSet.getInt("readRows")
+        SparkJob(id.toString, status, readRows)
+      }.takeWhile(_ => streamingQueryResultSet.next()).toVector
+      JobDetails(name, stream, status, 0, 0, streamingQueries) // TODO: Jobs
     }.toOption
   }
 
@@ -40,12 +46,15 @@ case class SparkMonitoringService(spark: SparkSession)(
   }
 
   def queryJobsOverview: Future[JobsOverview] = Future {
+    val statement = databaseConnection.createStatement()
+    val resultSet = statement.executeQuery("SELECT * FROM jobs")
     JobsOverview(
-      spark.sparkContext.statusTracker.getActiveJobIds
-        .map(
-          jid => JobBrief(jid.toString, jid.toString)
-        )
-        .toList
+      Iterator.continually {
+        val name = resultSet.getString("name")
+        val stream = resultSet.getBoolean("stream")
+        val status = resultSet.getString("status")
+        JobBrief(name, status, stream)
+      }.takeWhile(_ => resultSet.next()).toList
     )
   }
 

@@ -56,6 +56,8 @@ object Version {
 
   val akkaHttpMetrics = "0.6.0"
 
+  val h2 = "1.4.200"
+
 }
 
 object Library {
@@ -163,5 +165,9 @@ object Library {
     "org.apache.spark" %% "spark-sql-kafka-0-10" % Version.spark exclude (
       "org.slf4j", "slf4j-log4j12"
     )
+  )
+
+  val h2db = Seq(
+    "com.h2database" % "h2" % Version.h2
   )
 }

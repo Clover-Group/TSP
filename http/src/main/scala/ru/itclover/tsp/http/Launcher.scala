@@ -2,7 +2,6 @@ package ru.itclover.tsp.http
 
 import java.net.URLDecoder
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
@@ -13,9 +12,11 @@ import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.SparkSession
 import ru.itclover.tsp.spark.StreamSource
 
+import java.sql.{Connection, DriverManager}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
 import scala.io.StdIn
+import scala.util.Try
 
 // We throw exceptions in the launcher.
 // Also, some statements are non-Unit but we cannot use multiple `val _` in the same scope
@@ -24,6 +25,26 @@ object Launcher extends App with HttpService {
   private val configs = ConfigFactory.load()
   override val isDebug: Boolean = configs.getBoolean("general.is-debug")
   private val log = Logger("Launcher")
+
+  // H2DB to store statuses
+  val database: Connection = Try {
+    val con = DriverManager.getConnection("jdbc:h2:mem:tsp_data")
+    val stmt = con.createStatement()
+    stmt.executeUpdate(
+      """
+        |CREATE TABLE jobs (name VARCHAR(100), stream BOOLEAN, status VARCHAR(10));
+        |CREATE TABLE spark_jobs (id INTEGER PRIMARY KEY, job_name VARCHAR(100),
+        | FOREIGN KEY (job_name) REFERENCES jobs(name), status VARCHAR(10));
+        |CREATE TABLE spark_streaming_queries(id INTEGER PRIMARY KEY, job_name VARCHAR(100), status VARCHAR(10),
+        | read_rows INTEGER, FOREIGN KEY (job_name) REFERENCES jobs(name));
+        |""".stripMargin)
+    log.warn("H2 database initialised successfully")
+    con
+  }.toEither.leftMap { ex =>
+    log.error("Cannot initialise H2 database for statuses. Exiting")
+    log.error(s"Exception while initialising was $ex")
+    sys.exit(1)
+  }.right.get
 
   // bku: Increase the number of parallel connections
   val parallel = 1024

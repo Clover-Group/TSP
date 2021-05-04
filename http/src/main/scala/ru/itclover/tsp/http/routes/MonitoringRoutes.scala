@@ -20,7 +20,6 @@ import fr.davit.akka.http.metrics.core.scaladsl.server.HttpMetricsDirectives.met
 import scala.concurrent.ExecutionContextExecutor
 import com.typesafe.scalalogging.Logger
 import ru.itclover.tsp.http.services.streaming.{
-  FlinkMonitoringService,
   SparkMonitoringService,
   MonitoringServiceProtocols
 }
@@ -61,7 +60,6 @@ trait MonitoringRoutes extends RoutesProtocols with MonitoringServiceProtocols {
 
   val uri: Uri
   val spark: SparkSession
-  lazy val monitoring = FlinkMonitoringService(uri)
   // hardcoded to localhost
   lazy val sparkMonitoring = SparkMonitoringService(spark)
   implicit val printer = PrettyPrinter
@@ -85,28 +83,28 @@ trait MonitoringRoutes extends RoutesProtocols with MonitoringServiceProtocols {
   )
 
   val route: Route = path("job" / Segment / "status") { uuid =>
-      onComplete(monitoring.queryJobInfo(uuid)) {
+      onComplete(sparkMonitoring.queryJobInfo(uuid)) {
         case Success(Some(details)) => complete((details))
         case Success(None)          => complete((BadRequest, FailureResponse(4006, "No such job.", Seq.empty)))
         case Failure(err)           => complete((InternalServerError, FailureResponse(5005, err)))
       }
     } ~
     path("job" / Segment / "exceptions") { uuid =>
-      onComplete(monitoring.queryJobExceptions(uuid)) {
+      onComplete(sparkMonitoring.queryJobExceptions(uuid)) {
         case Success(Some(exceptions)) => complete((exceptions))
         case Success(None)             => complete((BadRequest, FailureResponse(4006, "No such job.", Seq.empty)))
         case Failure(err)              => complete((InternalServerError, FailureResponse(5005, err)))
       }
     } ~
     path("job" / Segment / "stop") { uuid =>
-      onComplete(monitoring.sendStopQuery(uuid)) {
+      onComplete(sparkMonitoring.sendStopQuery(uuid)) {
         case Success(Some(_)) => complete((SuccessfulResponse(1)))
         case Success(None)    => complete((BadRequest, FailureResponse(4006, "No such job.", Seq.empty)))
         case Failure(err)     => complete((InternalServerError, FailureResponse(5005, err)))
       }
     } ~
     path("jobs" / "overview") {
-      onComplete(monitoring.queryJobsOverview) {
+      onComplete(sparkMonitoring.queryJobsOverview) {
         case Success(resp) => complete((resp))
         case Failure(err)  => complete((InternalServerError, FailureResponse(5005, err)))
       }

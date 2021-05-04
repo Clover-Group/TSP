@@ -10,16 +10,16 @@ object MonitoringServiceModel {
   case class JobDetailsWithMetrics(details: JobDetails, metrics: Map[String, String])
 
   case class JobDetails(
-    jid: String,
-    name: String,
-    state: String,
-    startTsMs: Long,
-    durationMs: Long,
-    vertices: Vector[Vertex]
+                         jobId: String,
+                         isStream: Boolean,
+                         state: String,
+                         startTsMs: Long,
+                         durationMs: Long,
+                         sparkJobs: Vector[SparkJob]
   ) {
     // note vice-versa
-    def readRecords = vertices.head.metrics.writeRecords
-    def writeRecords: Long = vertices.last.metrics.readRecords
+    // def readRecords = sparkJobs.head.metrics.writeRecords
+    // def writeRecords: Long = sparkJobs.last.metrics.readRecords
   }
 
   case class Metric(id: String, value: String)
@@ -32,13 +32,11 @@ object MonitoringServiceModel {
     def onLastVertex(id: String, name: String) = MetricInfo(Int.MaxValue, id, name)
   }
 
-  case class Vertex(id: String, name: String, metrics: VertexMetrics)
-
-  case class VertexMetrics(readRecords: Long, writeRecords: Long, currentEventTs: Option[Long])
+  case class SparkJob(id: String, name: String, readRecords: Int)
 
   case class JobsOverview(jobs: List[JobBrief])
 
-  case class JobBrief(jid: String, name: String)
+  case class JobBrief(jid: String, status: String, isStream: Boolean)
 
   case class JobExceptions(timestamp: Long, rootException: String, truncated: Boolean)
 
@@ -60,40 +58,32 @@ trait MonitoringServiceProtocols extends SprayJsonSupport with DefaultJsonProtoc
   implicit val metricFormat = jsonFormat2(Metric.apply)
   implicit val metricNameFormat = jsonFormat1(MetricName.apply)
   implicit val monitoringErrorFormat = jsonFormat1(MonitoringError.apply)
-  implicit val vertexMetricsFormat = jsonFormat(
-    VertexMetrics.apply,
-    "read-records",
-    "write-records",
-    "currentEventTs"
-  )
 
-  implicit val vertexFormat = jsonFormat3(Vertex.apply)
+  implicit val vertexFormat = jsonFormat3(SparkJob.apply)
   implicit object jobFormat extends RootJsonFormat[JobDetails] {
     override def write(obj: JobDetails): JsValue = JsObject(
-      ("jid", JsString(obj.jid)),
-      ("name", JsString(obj.name)),
+      ("jobId", JsString(obj.jobId)),
+      ("isStream", JsBoolean(obj.isStream)),
       ("state", JsString(obj.state)),
       ("start-time", JsNumber(obj.startTsMs)),
       ("duration", JsNumber(obj.durationMs)),
-      ("vertices", JsArray(obj.vertices.map(vertexFormat.write))),
-      ("read-records", JsNumber(obj.readRecords)),
-      ("write-records", JsNumber(obj.writeRecords))
+      ("sparkJobs", JsArray(obj.sparkJobs.map(vertexFormat.write)))
     )
 
     override def read(json: JsValue): JobDetails = json match {
       case JsObject(fields) =>
         JobDetails(
-          fields("jid").convertTo[String],
-          fields("name").convertTo[String],
+          fields("jobId").convertTo[String],
+          fields("isStream").convertTo[Boolean],
           fields("state").convertTo[String],
           fields("start-time").convertTo[Long],
           fields("duration").convertTo[Long],
-          fields("vertices").convertTo[Vector[Vertex]]
+          fields("vertices").convertTo[Vector[SparkJob]]
         )
       case _ => throw new DeserializationException(s"Cannot deserialize $json as JobDetails")
     }
   }
-  implicit val jobBriefFormat = jsonFormat2(JobBrief.apply)
+  implicit val jobBriefFormat = jsonFormat3(JobBrief.apply)
   implicit val jobInfoFormat = jsonFormat3(MetricInfo.apply)
   implicit val jobOverviewFormat = jsonFormat1(JobsOverview.apply)
   implicit val jobDetailsAndMetricsFormat = jsonFormat2(JobDetailsWithMetrics.apply)

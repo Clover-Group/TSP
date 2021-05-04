@@ -21,9 +21,9 @@ import ru.itclover.tsp.http.domain.input.FindPatternsRequest
 import ru.itclover.tsp.http.domain.output.SuccessfulResponse.ExecInfo
 import ru.itclover.tsp.http.domain.output._
 import ru.itclover.tsp.http.protocols.RoutesProtocols
-import ru.itclover.tsp.http.services.streaming.FlinkMonitoringService
 import ru.itclover.tsp.spark
 import org.apache.spark.sql.{Row => SparkRow}
+import ru.itclover.tsp.http.Launcher
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import ru.itclover.tsp.spark.utils.{DataWriterWrapper, ErrorsADT}
@@ -42,7 +42,6 @@ trait JobsRoutes extends RoutesProtocols {
   implicit val decoders = AnyDecodersInstances
 
   val monitoringUri: Uri
-  lazy val monitoring = FlinkMonitoringService(monitoringUri)
 
   @transient
   private val log = Logger[JobsRoutes]
@@ -80,8 +79,13 @@ trait JobsRoutes extends RoutesProtocols {
               case "jdbc" => spark.JdbcSource.create(inputConf.asInstanceOf[spark.io.JDBCInputConf], fields)
               case "kafka" => spark.KafkaSource.create(inputConf.asInstanceOf[spark.io.KafkaInputConf], fields)
             }
+            val isStreaming: Boolean = from match {
+              case "jdbc"  => false
+              case "kafka" => true
+              case _       => false
+            }
             val stream: Either[SparkErr, DataWriterWrapper[SparkRow]] =
-              source.flatMap(createSparkStream(uuid, patterns, fields, inputConf, outConf, _))
+              source.flatMap(createSparkStream(uuid, isStreaming, patterns, fields, inputConf, outConf, _))
             val result: Either[SparkErr, Option[Long]] = stream.flatMap(runSparkStream(_, isAsync))
             val resultOrErr = result
 
@@ -98,6 +102,7 @@ trait JobsRoutes extends RoutesProtocols {
 
   def createSparkStream[E: ClassTag: TypeTag, EItem](
     uuid: String,
+    isStreaming: Boolean,
     patterns: Seq[RawPattern],
     fields: Set[EKey],
     inputConf: spark.io.InputConf[E, EKey, EItem],
@@ -107,6 +112,13 @@ trait JobsRoutes extends RoutesProtocols {
     //streamEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     log.debug("createStream started")
+    val statusStatement = Launcher.database.prepareStatement(
+      "INSERT INTO jobs(name, stream, status) VALUES (?, ?, ?)"
+    )
+    statusStatement.setString(1, uuid)
+    statusStatement.setBoolean(2, isStreaming)
+    statusStatement.setString(3, "STARTED")
+    statusStatement.execute()
 
     val searcher = spark.PatternsSearchJob(uuid, source, fields, decoders)
     val strOrErr = searcher.patternsSearchStream(

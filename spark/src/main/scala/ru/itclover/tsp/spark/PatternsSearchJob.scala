@@ -17,10 +17,12 @@ import ru.itclover.tsp.core.optimizations.Optimizer
 import ru.itclover.tsp.core.{Incident, RawPattern, _}
 import ru.itclover.tsp.dsl.{ASTPatternGenerator, AnyState, PatternMetadata}
 import ru.itclover.tsp.spark.utils._
-import ru.itclover.tsp.spark.io.{InputConf, JDBCInputConf, JDBCOutputConf, KafkaInputConf, KafkaOutputConf, RowSchema, OutputConf}
+import ru.itclover.tsp.spark.io.{InputConf, JDBCInputConf, JDBCOutputConf, KafkaInputConf, KafkaOutputConf, OutputConf, RowSchema}
 import ru.itclover.tsp.spark.transformers.SparseRowsDataAccumulator
 import ru.itclover.tsp.spark.utils.ErrorsADT.{ConfigErr, InvalidPatternsCode}
 import ru.itclover.tsp.spark.utils.DataWriterWrapperImplicits._
+
+import java.sql.DriverManager
 //import ru.itclover.tsp.utils.ErrorsADT.{ConfigErr, InvalidPatternsCode}
 // import ru.itclover.tsp.spark.utils.EncoderInstances._
 import org.apache.spark.sql.expressions.{Window => SparkWindow}
@@ -171,17 +173,45 @@ case class PatternsSearchJob[In: ClassTag: TypeTag, InKey, InItem](
   }
 
   def queryListener: StreamingQueryListener = new StreamingQueryListener {
+    val connection = DriverManager.getConnection("jdbc:h2:mem:tsp_data")
+
     override def onQueryStarted(event: StreamingQueryListener.QueryStartedEvent): Unit = {
       //println(s"${event.id} started")
+      val s = connection.prepareStatement(
+        """
+          |INSERT INTO spark_streaming_queries (job_name, status, read_rows)
+          |VALUES (?, ?, ?)
+          |""".stripMargin)
+      s.setString(1, uuid)
+      s.setString(2, "RUNNING")
+      s.setInt(3, 0)
+      s.execute()
     }
 
     override def onQueryProgress(event: StreamingQueryListener.QueryProgressEvent): Unit = {
       val rows = event.progress.sources.map(_.numInputRows).sum
-      //println(s"$rows rows processed")
+      val s = connection.prepareStatement(
+        """
+          |UPDATE spark_streaming_queries
+          |SET read_rows = read_rows + ?
+          |WHERE jobName = ?
+          |""".stripMargin)
+      s.setLong(1, rows)
+      s.setString(2, uuid)
+      s.execute()
     }
 
     override def onQueryTerminated(event: StreamingQueryListener.QueryTerminatedEvent): Unit = {
       //println(s"${event.id} stopped")
+      val s = connection.prepareStatement(
+        """
+          |UPDATE spark_streaming_queries
+          |SET status = 'STOPPED'
+          |WHERE jobName = ?
+          |""".stripMargin)
+      s.setString(1, uuid)
+      s.execute()
+      connection.close()
     }
   }
 

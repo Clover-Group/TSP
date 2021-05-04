@@ -19,19 +19,19 @@ object MockServer extends HttpApp with MonitoringServiceProtocols {
     path("jobs" / "overview"./) {
       get {
         complete(
-          JobsOverview(List(JobBrief("1", "job1"), JobBrief("2", "job2")))
+          JobsOverview(List(JobBrief("1", "job1", false), JobBrief("2", "job2", true)))
         )
       }
     } ~ path("jobs" / "1"./) {
       get {
         complete(
-          JobDetails("1", "job1", "FINISHED", 0, 1, Vector(Vertex("101", "v101", VertexMetrics(100, 100, Some(0)))))
+          JobDetails("1", false, "FINISHED", 0, 1, Vector(SparkJob("101", "v101", 42)))
         )
       }
     } ~ path("jobs" / "2"./) {
       get {
         complete(
-          JobDetails("2", "job2", "FINISHED", 0, 1, Vector(Vertex("201", "v201", VertexMetrics(100, 100, Some(0)))))
+          JobDetails("2", true, "FINISHED", 0, 1, Vector(SparkJob("201", "v201", 42)))
         )
       }
     } ~ path("jobs" / "1"./) {

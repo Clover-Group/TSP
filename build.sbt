@@ -170,7 +170,7 @@ lazy val http = project.in(file("http"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Library.scalaTest ++ Library.akka ++
-      Library.akkaHttp ++ Library.sparkDeps ++ Library.logging
+      Library.akkaHttp ++ Library.sparkDeps ++ Library.logging ++ Library.h2db
   )
   .dependsOn(core, config, spark, dsl)
 
