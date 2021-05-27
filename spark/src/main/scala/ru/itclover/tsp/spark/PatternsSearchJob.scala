@@ -282,7 +282,7 @@ object PatternsSearchJob {
           $"forwardedFields",
           $"patternUnit",
           $"patternSubunit",
-          $"patternPayload"
+          $"patternValue"
         ).as("result")
       )
       .select(
@@ -293,7 +293,7 @@ object PatternsSearchJob {
         $"result.forwardedFields".as("forwardedFields"),
         $"result.patternUnit".as("patternUnit"),
         $"result.patternSubunit".as("patternSubunit"),
-        $"result.patternPayload".as("patternPayload")
+        $"result.patternValue".as("patternValue")
       )
       .drop("prev", "curr", "seriesCount")
 

@@ -16,6 +16,6 @@ final case class ToIncidentsMapper[E, EKey, EItem](
   def apply(event: E): Segment => Incident = {
     val incidentId = s"P#$patternId;" + partitionFields.map(f => f -> extractor[Any](event, f)).mkString
     val unit = Try(extractor[Any](event, unitIdField).toString.toInt).getOrElse(Int.MinValue)
-    segment => Incident(incidentId, patternId, sessionWindowMs, segment, unit, subunit)
+    segment => Incident(incidentId, patternId, sessionWindowMs, segment, unit, subunit, segment.value)
   }
 }

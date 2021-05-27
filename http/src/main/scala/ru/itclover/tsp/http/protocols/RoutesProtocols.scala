@@ -109,7 +109,8 @@ trait RoutesProtocols extends SprayJsonSupport with DefaultJsonProtocol {
     "toTsField",
     "appIdFieldVal",
     "patternIdField",
-    "subunitIdField"
+    "subunitIdField",
+    "valueField"
   )
 
   implicit val sparkJdbcInpConfFmt = jsonFormat(

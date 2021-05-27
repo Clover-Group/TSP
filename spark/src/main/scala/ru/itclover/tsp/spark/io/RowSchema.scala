@@ -11,17 +11,18 @@ case class RowSchema(
   toTsField: Symbol,
   appIdFieldVal: (Symbol, Int),
   patternIdField: Symbol,
-  subunitIdField: Symbol
+  subunitIdField: Symbol,
+  valueField: Symbol,
 ) extends Serializable {
-  val fieldsCount: Int = 6
+  val fieldsCount: Int = 7
 
   val fieldsNames: List[Symbol] =
-    List(unitIdField, fromTsField, toTsField, appIdFieldVal._1, patternIdField, subunitIdField)
+    List(unitIdField, fromTsField, toTsField, appIdFieldVal._1, patternIdField, subunitIdField, valueField)
 
   val fieldsIndexesMap: mutable.LinkedHashMap[Symbol, Int] = mutable.LinkedHashMap(fieldsNames.zipWithIndex: _*)
 
   val fieldClasses: List[Class[_]] =
-    List(classOf[Int], classOf[Timestamp], classOf[Timestamp], classOf[Int], classOf[Int], classOf[Int])
+    List(classOf[Int], classOf[Timestamp], classOf[Timestamp], classOf[Int], classOf[Int], classOf[Int], classOf[Double])
 
   val fieldDatatypes: List[DataType] =
     List(
@@ -30,7 +31,8 @@ case class RowSchema(
       DataTypes.TimestampType,
       DataTypes.IntegerType,
       DataTypes.IntegerType,
-      DataTypes.IntegerType
+      DataTypes.IntegerType,
+      DataTypes.DoubleType
     )
 
   val unitIdInd = fieldsIndexesMap(unitIdField)
@@ -43,4 +45,6 @@ case class RowSchema(
   val appIdInd = fieldsIndexesMap(appIdFieldVal._1)
 
   val subunitIdInd = fieldsIndexesMap(subunitIdField)
+
+  val valueInd = fieldsIndexesMap(valueField)
 }

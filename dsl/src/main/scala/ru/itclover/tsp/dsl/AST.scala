@@ -99,6 +99,14 @@ case class AndThen(first: AST, second: AST) extends AST {
   override val valueType: ASTType = BooleanASTType
 }
 
+case class Where(value: AST, cond: AST) extends AST {
+  //value.requireType(BooleanASTType, s"1st argument '$value' must be boolean in '$this'")
+  cond.requireType(BooleanASTType, s"2nd argument '$cond' must be boolean in '$this'")
+  override def metadata = value.metadata |+| cond.metadata
+
+  override val valueType: ASTType = value.valueType
+}
+
 // Default gap is useful.
 @SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
 case class Timer(cond: AST, interval: TimeInterval, maxGapMs: Long, gap: Option[Window] = None) extends AST {

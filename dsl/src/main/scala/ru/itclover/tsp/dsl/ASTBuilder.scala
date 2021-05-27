@@ -23,7 +23,7 @@ class ASTBuilder(
   @transient implicit val funReg: FunctionRegistry = DefaultFunctionRegistry
 
   def start: Rule1[AST] = rule {
-    trileanExpr ~ EOI
+    (trileanExpr | whereExpr | expr) ~ EOI
   }
 
   def trileanExpr: Rule1[AST] = rule {
@@ -35,6 +35,11 @@ class ASTBuilder(
       | ignoreCase("or") ~ ws ~ trileanTerm ~>
       ((e: AST, f: AST) => FunctionCall('or, Seq(e, f)))
     )
+  }
+
+  def whereExpr: Rule1[AST] = rule {
+    expr ~ ignoreCase("where") ~ trileanFactor ~>
+      ((e: AST, f: AST) => Where(e, f))
   }
 
   // The following comment disables IDEA's type-aware inspection for a region (until the line with the same comment)

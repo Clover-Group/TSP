@@ -23,6 +23,7 @@ case class PatternsToRowMapper[Event, EKey](sourceId: Int, schema: RowSchema) {
     values(schema.beginInd) = new Timestamp(incident.segment.from.toMillis)
     values(schema.endInd) = new Timestamp(incident.segment.to.toMillis)
     values(schema.subunitIdInd) = incident.patternSubunit
+    values(schema.valueInd) = incident.patternValue
 
     new GenericRow(values)
   }

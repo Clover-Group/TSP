@@ -261,7 +261,7 @@ class SimpleCasesTest
 
 
   val wideSparkRowSchema =
-    SparkRowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'subunit)
+    SparkRowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'subunit, 'value)
 
   val narrowSparkRowSchema = wideSparkRowSchema.copy(
     appIdFieldVal = ('app, 2)

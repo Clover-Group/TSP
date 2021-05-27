@@ -158,6 +158,8 @@ case class ASTPatternGenerator[Event, EKey, EItem]()(
         MapPattern(AndThenPattern(generatePattern(at.first), generatePattern(at.second)))(
           v => if (v.isInstanceOf[(Idx, Idx)]) true else v
         )
+      case w: Where =>
+        WherePattern(generatePattern(w.value), generatePattern(w.cond))
       // TODO: Window -> TimeInterval in TimerPattern
       case t: Timer =>
         TimerPattern(generatePattern(t.cond), Window(t.interval.max), t.maxGapMs)

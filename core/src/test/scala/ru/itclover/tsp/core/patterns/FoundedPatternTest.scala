@@ -12,12 +12,14 @@ class FoundedPatternTest extends WordSpec with Matchers {
 
     val firstTestSegment = Segment(
       from = Time(1000),
-      to = Time(4000)
+      to = Time(4000),
+      value = 1
     )
 
     val secondTestSegment = Segment(
       from = Time(2000),
-      to = Time(3000)
+      to = Time(3000),
+      value = 1
     )
 
     "from semigroup" in {
@@ -29,6 +31,7 @@ class FoundedPatternTest extends WordSpec with Matchers {
         segment = firstTestSegment,
         patternUnit = 13,
         patternSubunit = 42,
+        patternValue = 1,
       )
 
       val secondIncident = Incident(
@@ -38,6 +41,7 @@ class FoundedPatternTest extends WordSpec with Matchers {
         segment = secondTestSegment,
         patternUnit = 13,
         patternSubunit = 42,
+        patternValue = 1,
       )
 
       val expectedIncident = Incident(
@@ -46,10 +50,12 @@ class FoundedPatternTest extends WordSpec with Matchers {
         maxWindowMs = 4000,
         segment = Segment(
           from = Time(1000),
-          to = Time(4000)
+          to = Time(4000),
+          value = 1
         ),
         patternUnit = 13,
         patternSubunit = 42,
+        patternValue = 1,
       )
 
       val actualIncident = IncidentInstances.semigroup.combine(firstIncident, secondIncident)

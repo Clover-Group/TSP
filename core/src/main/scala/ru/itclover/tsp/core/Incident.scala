@@ -17,6 +17,7 @@ case class Incident(
   segment: Segment,
   patternUnit: Int,
   patternSubunit: Int,
+  patternValue: Double
 ) extends Product
     with Serializable
 
@@ -34,9 +35,10 @@ object IncidentInstances {
         b.id,
         b.patternId,
         b.maxWindowMs,
-        Segment(from, to),
+        Segment(from, to, b.patternValue),
         b.patternUnit,
         b.patternSubunit,
+        b.patternValue
       )
     }
   }
