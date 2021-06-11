@@ -58,7 +58,7 @@ class FoundedPatternTest extends WordSpec with Matchers {
         patternValue = 1,
       )
 
-      val actualIncident = IncidentInstances.semigroup.combine(firstIncident, secondIncident)
+      val actualIncident = IncidentInstances.semigroup(None).combine(firstIncident, secondIncident)
 
       actualIncident shouldBe expectedIncident
 

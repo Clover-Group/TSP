@@ -52,7 +52,7 @@ class AggregatorsPerfTest extends FlatSpec with HttpServiceMatchers with ForAllT
     partitionFields = Seq('t1)
   )
 
-  val sinkSchema = RowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'subunit)
+  val sinkSchema = RowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'subunit, 'value)
 
   val outputConf = JDBCOutputConf(
     "Test.SM_basic_patterns",

@@ -55,7 +55,7 @@ trait RoutesProtocols extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val fResponseFmt = jsonFormat3(FailureResponse.apply)
 
-  implicit val rawPatternFmt = jsonFormat3(RawPattern.apply)
+  implicit val rawPatternFmt = jsonFormat4(RawPattern.apply)
 
   // TODO: Remove type bounds for (In|Out)putConf?
   implicit def sparkPatternsRequestFmt[IN <: spark.io.InputConf[_, _, _]: JsonFormat, OUT <: spark.io.OutputConf[_]: JsonFormat] =

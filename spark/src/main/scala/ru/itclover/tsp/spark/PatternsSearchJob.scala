@@ -77,10 +77,11 @@ case class PatternsSearchJob[In: ClassTag: TypeTag, InKey, InItem](
       forwardedFields,
       useWindowing
     )
+    val patternAggregators = richPatterns.map(_._2).map(p => (p.id, p.subunit.getOrElse(0)) -> p.aggregator).toMap
     source.conf match {
       case _: KafkaInputConf => singleIncidents // this must be processed upon writing
       case _ =>
-        if (source.conf.defaultEventsGapMs.getOrElse(2000L) > 0L) reduceIncidents(singleIncidents)(source.spark)
+        if (source.conf.defaultEventsGapMs.getOrElse(2000L) > 0L) reduceIncidents(singleIncidents, patternAggregators)(source.spark)
         else singleIncidents
     }
 
@@ -252,7 +253,7 @@ object PatternsSearchJob {
     res
   }
 
-  def reduceIncidents(inc: Dataset[Incident])(implicit spark: SparkSession): Dataset[Incident] = {
+  def reduceIncidents(inc: Dataset[Incident], aggregators: Map[(Int, Int), Option[String]])(implicit spark: SparkSession): Dataset[Incident] = {
     import spark.implicits._
     log.debug("reduceIncidents started")
 
@@ -264,9 +265,9 @@ object PatternsSearchJob {
 
     // Repeat the starting entry
     val newIncidents = spark.createDataset(List(incidents.first)).union(incidents)
-    val win = SparkWindow.partitionBy("patternId", "forwardedFields").orderBy("segment.from")
+    val win = SparkWindow.partitionBy("patternId", "patternSubunit").orderBy("segment.from")
 
-    val reducer = new IncidentAggregator
+    val reducer = new IncidentAggregator(aggregators)
 
     val res = newIncidents
       .withColumn("curr", col("segment.from.toMillis"))

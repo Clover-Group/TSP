@@ -4,4 +4,5 @@ case class RawPattern(
   id: Int,
   sourceCode: String,
   subunit: Option[Int] = None,
+  aggregator: Option[String] = None,
 ) extends Serializable

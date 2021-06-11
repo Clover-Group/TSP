@@ -5,10 +5,10 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
 import org.apache.spark.sql.types.{DataType, StructType}
-import ru.itclover.tsp.core.{Incident, Segment, Time}
+import ru.itclover.tsp.core.{Incident, IncidentInstances, Segment, Time}
 import ru.itclover.tsp.core.IncidentInstances._
 
-class IncidentAggregator extends UserDefinedAggregateFunction {
+class IncidentAggregator(aggregators: Map[(Int, Int), Option[String]]) extends UserDefinedAggregateFunction {
   def incidentSchema = ScalaReflection.schemaFor[Incident].dataType.asInstanceOf[StructType]
 
   override def inputSchema: StructType = incidentSchema
@@ -28,11 +28,15 @@ class IncidentAggregator extends UserDefinedAggregateFunction {
   override def update(buffer: MutableAggregationBuffer, input: Row): Unit = {
     val res: Incident =
       if (initialEvent) evaluate(input).asInstanceOf[Incident]
-      else
-        implicitly[Semigroup[Incident]].combine(
-          evaluate(buffer).asInstanceOf[Incident],
-          evaluate(input).asInstanceOf[Incident]
+      else {
+        val inc1 = evaluate(buffer).asInstanceOf[Incident]
+        val inc2 = evaluate(input).asInstanceOf[Incident]
+        val aggregator = aggregators.getOrElse((inc1.patternId, inc1.patternSubunit), None)
+        IncidentInstances.semigroup(aggregator).combine(
+          inc1,
+          inc2
         )
+      }
     initialEvent = false
     buffer.update(0, res.id)
     buffer.update(1, res.patternId)
@@ -45,11 +49,15 @@ class IncidentAggregator extends UserDefinedAggregateFunction {
   override def merge(buffer1: MutableAggregationBuffer, buffer2: Row): Unit = {
     val res: Incident =
       if (initialEvent) evaluate(buffer2).asInstanceOf[Incident]
-      else
-        implicitly[Semigroup[Incident]].combine(
-          evaluate(buffer1).asInstanceOf[Incident],
-          evaluate(buffer2).asInstanceOf[Incident]
+      else {
+        val incident1 = evaluate(buffer1).asInstanceOf[Incident]
+        val incident2 = evaluate(buffer2).asInstanceOf[Incident]
+        val aggregator = aggregators.getOrElse((incident1.patternId, incident1.patternSubunit), None)
+        IncidentInstances.semigroup(aggregator).combine(
+          incident1,
+          incident2
         )
+      }
     initialEvent = false
     buffer1.update(0, res.id)
     buffer1.update(1, res.patternId)
